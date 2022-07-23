@@ -17,6 +17,12 @@ export class PerformancesMockApiService {
     "JR-3": 2,
     "SR-4": 3,
   };
+
+  private _getTimeInSecond(performance: Performance): number {
+    const [minute, second] = performance.value.split(":");
+    return parseInt(minute) * 60 + parseInt(second);
+  }
+
   private _sortConfig: Map<SortDirection, (a: Performance, b: Performance) => number> = new Map();
 
   /**
@@ -89,15 +95,27 @@ export class PerformancesMockApiService {
       return [200, performances];
     });
 
-    /*
     this._appMockApiService.onGet(`api/performances?sortBy=${sortByTimeFastToSlow}`).reply(() => {
-     
+      // Clone the performances
+      const performances: Performance[] = cloneDeep(this._performances);
+
+      // Sort the performances by the year field
+      performances.sort(this._sortConfig.get(sortByTimeFastToSlow));
+
+      // Return the response
+      return [200, performances];
     });
 
     this._appMockApiService.onGet(`api/performances?sortBy=${sortByTimeSlowToFast}`).reply(() => {
-     
+      // Clone the performances
+      const performances: Performance[] = cloneDeep(this._performances);
+
+      // Sort the performances by the year field
+      performances.sort(this._sortConfig.get(sortByTimeSlowToFast));
+
+      // Return the response
+      return [200, performances];
     });
-    */
   }
 
   private sortByYearFrToSr(a: Performance, b: Performance): number {
@@ -109,10 +127,10 @@ export class PerformancesMockApiService {
   }
 
   private sortByTimeFastToSlow(a: Performance, b: Performance): number {
-    return 1;
+    return this._getTimeInSecond(a) - this._getTimeInSecond(b);
   }
 
   private sortByTimeSlowToFast(a: Performance, b: Performance): number {
-    return 1;
+    return this._getTimeInSecond(b) - this._getTimeInSecond(a);
   }
 }
